@@ -1,0 +1,160 @@
+import { useState } from 'react';
+import { Search, Filter, Calendar } from 'lucide-react';
+import '../styles/HODDashboard.css';
+
+interface StudentRow {
+  id: string;
+  enrollmentNo: string;
+  studentName: string;
+  semester: string;
+  batch: string;
+  section: string;
+  math: number;
+  physics: number;
+  chemistry: number;
+  english: number;
+  cs: number;
+  total: number;
+  percentage: number;
+  result: 'PASS' | 'FAIL';
+}
+
+const mockStudentData: StudentRow[] = [
+  { id: '22240001', enrollmentNo: '22240001', studentName: 'Rahul Sharma', semester: 'I', batch: '2022', section: 'A', math: 85, physics: 78, chemistry: 82, english: 75, cs: 88, total: 408, percentage: 81.6, result: 'PASS' },
+  { id: '22240002', enrollmentNo: '22240002', studentName: 'Priya Patel', semester: 'I', batch: '2022', section: 'A', math: 92, physics: 88, chemistry: 85, english: 80, cs: 90, total: 435, percentage: 87, result: 'PASS' },
+  { id: '22240003', enrollmentNo: '22240003', studentName: 'Amit Kumar', semester: 'I', batch: '2022', section: 'A', math: 45, physics: 52, chemistry: 48, english: 65, cs: 55, total: 265, percentage: 53, result: 'FAIL' },
+  { id: '22240004', enrollmentNo: '22240004', studentName: 'Sneha Desai', semester: 'I', batch: '2022', section: 'B', math: 88, physics: 85, chemistry: 90, english: 78, cs: 92, total: 433, percentage: 86.6, result: 'PASS' },
+  { id: '22240005', enrollmentNo: '22240005', studentName: 'Ravi Singh', semester: 'I', batch: '2022', section: 'B', math: 75, physics: 70, chemistry: 72, english: 68, cs: 78, total: 363, percentage: 72.6, result: 'PASS' },
+  { id: '22240006', enrollmentNo: '22240006', studentName: 'Anjali Verma', semester: 'I', batch: '2022', section: 'B', math: 42, physics: 48, chemistry: 45, english: 55, cs: 50, total: 240, percentage: 48, result: 'FAIL' },
+  { id: '22240007', enrollmentNo: '22240007', studentName: 'Vikram Mehta', semester: 'I', batch: '2022', section: 'A', math: 90, physics: 92, chemistry: 88, english: 85, cs: 95, total: 450, percentage: 90, result: 'PASS' },
+  { id: '22240008', enrollmentNo: '22240008', studentName: 'Pooja Reddy', semester: 'I', batch: '2022', section: 'A', math: 78, physics: 75, chemistry: 80, english: 72, cs: 82, total: 387, percentage: 77.4, result: 'PASS' },
+  { id: '22240009', enrollmentNo: '22240009', studentName: 'Karan Joshi', semester: 'I', batch: '2022', section: 'B', math: 38, physics: 42, chemistry: 40, english: 58, cs: 45, total: 223, percentage: 44.6, result: 'FAIL' },
+  { id: '22240010', enrollmentNo: '22240010', studentName: 'Divya Nair', semester: 'I', batch: '2022', section: 'B', math: 95, physics: 90, chemistry: 92, english: 88, cs: 98, total: 463, percentage: 92.6, result: 'PASS' }
+];
+
+export default function HODDashboard() {
+  const [students, setStudents] = useState<StudentRow[]>(mockStudentData);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedSemester, setSelectedSemester] = useState('all');
+
+  const filteredStudents = students.filter(student => {
+    const matchesSearch = 
+      student.studentName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      student.enrollmentNo.includes(searchQuery);
+    
+    const matchesSemester = selectedSemester === 'all' || student.semester === selectedSemester;
+    
+    return matchesSearch && matchesSemester;
+  });
+
+  const getScoreClass = (score: number) => {
+    if (score >= 75) return 'score-high';
+    if (score >= 50) return 'score-medium';
+    return 'score-low';
+  };
+
+  return (
+    <div className="hod-dashboard-container">
+      {/* Filters Section */}
+      <div className="filters-section">
+        <div className="search-box">
+          <Search size={18} />
+          <input
+            type="text"
+            placeholder="Search by name or enrollment number..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            data-testid="search-input"
+          />
+        </div>
+
+        <div className="filter-controls">
+          <button className="filter-btn" data-testid="filter-button">
+            <Filter size={16} />
+            Filters
+          </button>
+          <button className="filter-btn" data-testid="date-filter-button">
+            <Calendar size={16} />
+            Date Range
+          </button>
+          <select 
+            value={selectedSemester} 
+            onChange={(e) => setSelectedSemester(e.target.value)}
+            className="semester-select"
+            data-testid="semester-select"
+          >
+            <option value="all">All Semesters</option>
+            <option value="I">Semester I</option>
+            <option value="II">Semester II</option>
+            <option value="III">Semester III</option>
+            <option value="IV">Semester IV</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Data Table */}
+      <div className="table-wrapper">
+        <div className="table-scroll">
+          <table className="hod-table" data-testid="hod-dashboard-table">
+            <thead>
+              <tr>
+                <th className="sticky-col">Enrollment No</th>
+                <th>Student Name</th>
+                <th>Semester</th>
+                <th>Batch</th>
+                <th>Section</th>
+                <th>Math</th>
+                <th>Physics</th>
+                <th>Chemistry</th>
+                <th>English</th>
+                <th>CS</th>
+                <th>Total</th>
+                <th>%</th>
+                <th>Result</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredStudents.map((student) => (
+                <tr key={student.id} data-testid={`student-row-${student.id}`}>
+                  <td className="sticky-col enrollment-col">{student.enrollmentNo}</td>
+                  <td className="name-col">{student.studentName}</td>
+                  <td>{student.semester}</td>
+                  <td>{student.batch}</td>
+                  <td>{student.section}</td>
+                  <td className={getScoreClass(student.math)}>{student.math}</td>
+                  <td className={getScoreClass(student.physics)}>{student.physics}</td>
+                  <td className={getScoreClass(student.chemistry)}>{student.chemistry}</td>
+                  <td className={getScoreClass(student.english)}>{student.english}</td>
+                  <td className={getScoreClass(student.cs)}>{student.cs}</td>
+                  <td className="total-col">{student.total}</td>
+                  <td className="percentage-col">{student.percentage.toFixed(1)}%</td>
+                  <td>
+                    <span className={`result-badge ${student.result.toLowerCase()}`}>
+                      {student.result}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Summary Stats */}
+      <div className="summary-stats">
+        <div className="stat-item">
+          <span className="stat-label">Total Students:</span>
+          <span className="stat-value">{filteredStudents.length}</span>
+        </div>
+        <div className="stat-item">
+          <span className="stat-label">Pass:</span>
+          <span className="stat-value pass">{filteredStudents.filter(s => s.result === 'PASS').length}</span>
+        </div>
+        <div className="stat-item">
+          <span className="stat-label">Fail:</span>
+          <span className="stat-value fail">{filteredStudents.filter(s => s.result === 'FAIL').length}</span>
+        </div>
+      </div>
+    </div>
+  );
+}
